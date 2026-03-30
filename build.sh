@@ -19,6 +19,7 @@ export chrootdo="arch-chroot $rootfs qemu-armhf-static /bin/bash -c"
 export LOCALVERSION=-onecloud
 
 function pre_build() {
+    mkdir -p build
     truncate --size=2048M $systemimg
 
     OFFSET=16
