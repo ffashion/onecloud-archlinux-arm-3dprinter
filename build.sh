@@ -20,7 +20,7 @@ export LOCALVERSION=-onecloud
 
 function pre_build() {
     mkdir -p build
-    truncate --size=2048M $systemimg
+    truncate --size=4096M $systemimg
 
     OFFSET=16
     BOOTSIZE=256
@@ -81,7 +81,11 @@ function build_rootfs() {
 }
 
 function post_build_rootfs() {
-    echo a
+
+    umount ${LOOP}p1
+    umount ${LOOP}p2
+    resize2fs -M ${LOOP}p2
+    zstd $systemimg -o $systemimg.zst
 }
 
 function pre_build_linux()
@@ -135,15 +139,6 @@ function post_build_linux()
     cp -r config/uboot/boot.scr $bootfs
 
     $chrootdo "mkimage -A arm -O linux -T ramdisk -C gzip -n uInitrd -d /boot/initramfs-6.12.28.onecloud.img /boot/uInitrd"
-
-
-    umount ${LOOP}p1
-    umount ${LOOP}p2
-
-    resize2fs -M ${LOOP}p2
-
-    zstd $systemimg -o $systemimg.zst
-
 }
 
 pre_build
@@ -154,5 +149,5 @@ pre_build_linux
 build_rootfs
 build_linux
 
-post_build_rootfs
 post_build_linux
+post_build_rootfs
