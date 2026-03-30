@@ -78,6 +78,27 @@ function build_rootfs() {
     # for package in $(cat config/*.aur.conf); do
     #     build_aur_package_rootfs $package
     # done
+
+
+    $chlivedo "echo '3dprinter' > /mnt/etc/hostname"
+    $chlivedo "echo 'LANG=C'> /mnt/etc/locale.conf"
+    $chlivedo "echo -n > /mnt/etc/machine-id"
+
+    # Configure rootfs
+    # $chrootdo "usermod -s /bin/bash klipper"
+    # $chrootdo "mkdir -p /home/klipper"
+    # $chrootdo "chown klipper: /home/klipper"
+    # $chrootdo "usermod -d /home/klipper klipper"
+
+    # $chrootdo "echo -e 'root:root\nklipper:klipper' | chpasswd"
+    $chrootdo "echo -e 'root:root\n' | chpasswd"
+    # $chrootdo "usermod -a -G wheel klipper"
+    $chrootdo "echo '%wheel ALL=(ALL:ALL) ALL' >> /etc/sudoers"
+
+    # $chrootdo "systemctl enable $(cat config/services.conf)"
+    $chrootdo "pacman-key --init"
+    $chrootdo "pacman-key --populate archlinuxarm"
+
 }
 
 function post_build_rootfs() {
