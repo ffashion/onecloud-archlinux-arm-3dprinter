@@ -20,7 +20,7 @@ export LOCALVERSION=-onecloud
 
 function pre_build() {
     mkdir -p build
-    truncate --size=4096M $systemimg
+    truncate --size=5120M $systemimg
 
     OFFSET=16
     BOOTSIZE=256
