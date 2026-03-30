@@ -32,7 +32,7 @@ jobs:
             libncurses5-dev bison flex libssl-dev device-tree-compiler \
             gcc-arm-none-eabi gcc-aarch64-linux-gnu bc libfdt-dev \
             libarchive-tools arch-install-scripts qemu-user-static \
-            systemd-container gcc-arm-linux-gnueabihf
+            systemd-container gcc-arm-linux-gnueabihf u-boot-tools
 
       - name: Initialization submodule
         run: git submodule update --init --depth=1
