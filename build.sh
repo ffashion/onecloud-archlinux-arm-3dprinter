@@ -84,7 +84,12 @@ function post_build_rootfs() {
 
     umount ${LOOP}p1
     umount ${LOOP}p2
+
+    tune2fs -M / ${LOOP}p2
+    e2fsck -yf -E discard ${LOOP}p2
     resize2fs -M ${LOOP}p2
+    e2fsck -yf ${LOOP}p2
+
     zstd $systemimg -o $systemimg.zst
 }
 
