@@ -47,7 +47,7 @@ jobs:
         with:
           name: 3dprinter-archlinux-wifistick-${{github.run_id}}-${{github.sha}}
           path: |
-            ${{github.workspace}}/build/system.img
+            ${{github.workspace}}/build/system.img.zst
       - name: Create release
         uses: softprops/action-gh-release@v1
         if: github.ref == 'refs/heads/master'
@@ -59,7 +59,7 @@ jobs:
           draft: false
           prerelease: false
           files: |
-            ${{github.workspace}}/build/system.img
+            ${{github.workspace}}/build/system.img.zst
       - name: Delete old releases
         uses: dev-drprasad/delete-older-releases@v0.2.0
         if: github.ref == 'refs/heads/master'

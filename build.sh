@@ -136,6 +136,14 @@ function post_build_linux()
 
     $chrootdo "mkimage -A arm -O linux -T ramdisk -C gzip -n uInitrd -d /boot/initramfs-6.12.28.onecloud.img /boot/uInitrd"
 
+
+    umount ${LOOP}p1
+    umount ${LOOP}p2
+
+    resize2fs -M ${LOOP}p2
+
+    zstd $systemimg -o $systemimg.zst
+
 }
 
 pre_build
