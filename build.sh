@@ -243,12 +243,12 @@ function build_rootfs() {
     export MOONRAKER_RUNTIME_HOME=/var/opt/moonraker
     export KLIPPER_HOME=/opt/klipper
 
-    cp -p config/klipper//klipper.conf $rootfs/${MOONRAKER_RUNTIME_HOME}/config/klipper.cfg
-    $chrootdo "chown klipper: ${MOONRAKER_RUNTIME_HOME}/config/klipper.cfg"
+    # cp -p config/klipper/klipper.conf $rootfs/${MOONRAKER_RUNTIME_HOME}/config/klipper.cfg
+    # $chrootdo "chown klipper: ${MOONRAKER_RUNTIME_HOME}/config/klipper.cfg"
 
-    cp -p config/moonraker/moonraker.env $rootfs/${MOONRAKER_RUNTIME_HOME}/systemd/moonraker.env
-    cp -p config/moonraker/moonraker.conf $rootfs/${MOONRAKER_RUNTIME_HOME}/config/moonraker.conf
-    $chrootdo "chown klipper: ${MOONRAKER_RUNTIME_HOME}/config/moonraker.conf"
+    # cp -p config/moonraker/moonraker.env $rootfs/${MOONRAKER_RUNTIME_HOME}/systemd/moonraker.env
+    # cp -p config/moonraker/moonraker.conf $rootfs/${MOONRAKER_RUNTIME_HOME}/config/moonraker.conf
+    # $chrootdo "chown klipper: ${MOONRAKER_RUNTIME_HOME}/config/moonraker.conf"
 
 
     # systemd services
