@@ -12,9 +12,9 @@ systemimg="build/system.img"
 bootfs=$livecd/mnt/boot
 rootfs=$livecd/mnt
 
-export chlivedo="arch-chroot $livecd qemu-armhf-static /bin/bash -c"
-export chrootdo="arch-chroot $rootfs qemu-armhf-static /bin/bash -c"
-# export chrootdo="systemd-nspawn -D $rootfs qemu-armhf-static /bin/bash -c"
+export chlivedo="arch-chroot $livecd qemu-arm-static /bin/bash -c"
+export chrootdo="arch-chroot $rootfs qemu-arm-static /bin/bash -c"
+# export chrootdo="systemd-nspawn -D $rootfs qemu-arm-static /bin/bash -c"
 
 export LOCALVERSION=-onecloud
 
@@ -54,7 +54,7 @@ function pre_build_rootfs() {
     mount --bind $livecd $livecd
     bsdtar -xpf $livepack -C $livecd
 
-    cp -p /usr/bin/qemu-armhf-static $livecd/bin/qemu-armhf-static
+    cp -p /usr/bin/qemu-arm-static $livecd/bin/qemu-arm-static
 
     $chlivedo "sed -i '/^\[options\]/a DisableSandbox' /etc/pacman.conf"
     $chlivedo "pacman-key --init"
@@ -72,7 +72,7 @@ function build_rootfs() {
         sudo $chlivedo "pacstrap -cGM /mnt $package"
     done
 
-    cp -p /usr/bin/qemu-armhf-static $rootfs/bin/qemu-armhf-static
+    cp -p /usr/bin/qemu-arm-static $rootfs/bin/qemu-arm-static
 
     # for package in $(cat config/*.aur.conf); do
     #     build_aur_package_rootfs $package
