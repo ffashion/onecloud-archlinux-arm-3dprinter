@@ -13,8 +13,8 @@ bootfs=$livecd/mnt/boot
 rootfs=$livecd/mnt
 
 export chlivedo="arch-chroot $livecd qemu-arm-static /bin/bash -c"
-export chrootdo="arch-chroot $rootfs qemu-arm-static /bin/bash -c"
-# export chrootdo="systemd-nspawn -D $rootfs qemu-arm-static /bin/bash -c"
+# export chrootdo="arch-chroot $rootfs qemu-arm-static /bin/bash -c"
+export chrootdo="systemd-nspawn -D $rootfs qemu-arm-static /bin/bash -c"
 
 export LOCALVERSION=-onecloud
 
