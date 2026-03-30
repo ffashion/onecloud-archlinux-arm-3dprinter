@@ -17,6 +17,7 @@ export chlivedo="arch-chroot $livecd qemu-arm-static /bin/bash -c"
 export chrootdo="systemd-nspawn -D $rootfs qemu-arm-static /bin/bash -c"
 
 export LOCALVERSION=-onecloud
+export KERNEL_VERSION=6.12.32
 
 function pre_build() {
     mkdir -p build
@@ -330,7 +331,7 @@ function post_build_linux()
     # Process uboot
 
     $chrootdo "echo '#KEYMAP=us' > /etc/vconsole.conf"
-    $chrootdo "mkinitcpio -k 6.12.28${LOCALVERSION} -g /boot/initramfs-6.12.28.onecloud.img"
+    $chrootdo "mkinitcpio -k ${KERNEL_VERSION}${LOCALVERSION} -g /boot/initramfs-${KERNEL_VERSION}.onecloud.img"
 
     mkimage -C none -A arm -T script -d config/uboot/boot.cmd config/uboot/boot.scr
 
@@ -338,7 +339,7 @@ function post_build_linux()
     cp -r config/uboot/boot.env $bootfs
     cp -r config/uboot/boot.scr $bootfs
 
-    $chrootdo "mkimage -A arm -O linux -T ramdisk -C gzip -n uInitrd -d /boot/initramfs-6.12.28.onecloud.img /boot/uInitrd"
+    $chrootdo "mkimage -A arm -O linux -T ramdisk -C gzip -n uInitrd -d /boot/initramfs-${KERNEL_VERSION}.onecloud.img /boot/uInitrd"
 }
 
 function generate_checksum()

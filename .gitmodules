@@ -5,4 +5,4 @@
 [submodule "linux"]
 	path = linux
 	url = https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
-	branch = v6.12.28
+	branch = v6.12.32
