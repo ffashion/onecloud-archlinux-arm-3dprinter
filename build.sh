@@ -66,6 +66,161 @@ function pre_build_rootfs() {
     mount ${LOOP}p2 $rootfs
 }
 
+function chlivealarmdo()
+{
+    path=$1
+    chalarm="cd /home/alarm/$path && su alarm -c"
+    command="$chalarm '$2'"
+
+    $chlivedo "$command"
+}
+
+function chlive_path_do() {
+    path=$1
+    command="cd $path; $2"
+    $chlivedo "$command"
+}
+
+function chlive_alarm_path_do() {
+    chlive_path_do '/home/alarm/' "$1"
+}
+
+
+function build_aur_package_live()
+{
+    local name=$1
+
+    local project_url="https://aur.archlinux.org/$name.git"
+
+    result=`chlive_alarm_path_do "file $name"`
+
+    if [[ "$result" =~ "No such file or directory" ]]; then
+        chlivealarmdo "" "git clone $project_url $name"
+    fi
+
+    local runtimedeps=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${depends[@]}')
+    local compiledeps=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${makedepends[@]}')
+    local checkdepends=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${checkdepends[@]}')
+
+    local pkgver=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${pkgver}-${pkgrel}')
+    # local pkgarch=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${arch[@]}')
+
+    for dep in $compiledeps; do
+        if $chlivedo "pacman -Qi $dep >/dev/null 2>&1"; then
+            continue;
+        fi
+
+        if ! $chlivedo "pacman -Si $dep >/dev/null 2>&1"; then
+            build_aur_package_live $dep
+        else
+            $chlivedo "pacman --noconfirm -S $dep"
+        fi
+    done
+
+
+    for dep in $runtimedeps; do
+        if $chlivedo "pacman -Qi $dep >/dev/null 2>&1"; then
+            continue;
+        fi
+
+        if ! $chlivedo "pacman -Si $dep >/dev/null 2>&1"; then
+            build_aur_package_live $dep
+        else
+            $chlivedo "pacman --noconfirm -S $dep"
+        fi
+    done
+
+
+    for dep in $checkdepends; do
+        if $chlivedo "pacman -Qi $dep >/dev/null 2>&1"; then
+            continue;
+        fi
+
+        if ! $chlivedo "pacman -Si $dep >/dev/null 2>&1"; then
+            build_aur_package_live $dep
+        else
+            $chlivedo "pacman --noconfirm -S $dep"
+        fi
+    done
+
+    result=`chlive_alarm_path_do "file $name/$name-*-*.pkg.tar.xz"`
+    if [[ "$result" =~ "No such file or directory" ]]; then
+        chlivealarmdo "$name" "makepkg -s --noconfirm"
+    fi
+
+    chlive_alarm_path_do "pacman --noconfirm -U $name/$name-*-*.pkg.tar.xz"
+
+    echo "build aur packaege $name to live finished"
+}
+
+function build_aur_package_rootfs()
+{
+    local name=$1
+    local project_url="https://aur.archlinux.org/$name.git"
+
+    echo "build aur packaege $name to rootfs start"
+
+    result=`chlive_alarm_path_do "file $name"`
+    if [[ "$result" =~ "No such file or directory" ]]; then
+        chlivealarmdo "" "git clone $project_url $name"
+    fi
+
+    local runtimedeps=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${depends[@]}')
+    local compiledeps=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${makedepends[@]}')
+    local checkdepends=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${checkdepends[@]}')
+
+    local pkgver=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${pkgver}-${pkgrel}')
+    # local pkgarch=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${arch[@]}')
+
+    for dep in $compiledeps; do
+        if $chlivedo "pacman -Qi $dep >/dev/null 2>&1"; then
+            continue;
+        fi
+
+        if ! $chlivedo "pacman -Si $dep >/dev/null 2>&1"; then
+            build_aur_package_live $dep
+        else
+            $chlivedo "pacman --noconfirm -S $dep"
+        fi
+    done
+
+
+    for dep in $runtimedeps; do
+        if $chrootdo "pacman -Qi $dep >/dev/null 2>&1"; then
+            continue;
+        fi
+
+        if ! $chlivedo "pacman -Si $dep >/dev/null 2>&1"; then
+            build_aur_package_rootfs $dep
+        else
+            $chlivedo "pacman --noconfirm -S $dep"
+            $chlivedo "pacstrap -cGM /mnt $dep"
+        fi
+    done
+
+    for dep in $checkdepends; do
+        if $chlivedo "pacman -Qi $dep >/dev/null 2>&1"; then
+            continue;
+        fi
+
+        if ! $chlivedo "pacman -Si $dep >/dev/null 2>&1"; then
+            build_aur_package_live $dep
+        else
+            $chlivedo "pacman --noconfirm -S $dep"
+        fi
+    done
+
+    result=`chlive_alarm_path_do "file $name/$name-*-*.pkg.tar.xz"`
+    if [[ "$result" =~ "No such file or directory" ]]; then
+        chlivealarmdo "$name" "makepkg -s --noconfirm"
+    fi
+
+    chlive_alarm_path_do "pacman --noconfirm -U $name/$name-*-*.pkg.tar.xz"
+    chlive_alarm_path_do "pacstrap -cGMU /mnt $name/$name-*-*.pkg.tar.xz"
+
+    echo "build aur packaege $name to rootfs finished"
+}
+
 function build_rootfs() {
 
     for package in $(cat config/*.pkg.conf); do
@@ -75,9 +230,30 @@ function build_rootfs() {
     cp -p /usr/bin/qemu-arm-static $rootfs/bin/qemu-arm-static
 
     mount ${LOOP}p1 $bootfs
-    # for package in $(cat config/*.aur.conf); do
-    #     build_aur_package_rootfs $package
-    # done
+
+    for package in $(cat config/*.aur.conf); do
+        build_aur_package_rootfs $package
+    done
+
+    # nginx
+    cp -p config/nginx/nginx.conf $rootfs/etc/nginx/
+
+    # klipper and moonraker
+    export MOONRAKER_HOME=/opt/moonraker
+    export MOONRAKER_RUNTIME_HOME=/var/opt/moonraker
+    export KLIPPER_HOME=/opt/klipper
+
+    cp -p config/klipper//klipper.conf $rootfs/${MOONRAKER_RUNTIME_HOME}/config/klipper.cfg
+    $chrootdo "chown klipper: ${MOONRAKER_RUNTIME_HOME}/config/klipper.cfg"
+
+    cp -p config/moonraker/moonraker.env $rootfs/${MOONRAKER_RUNTIME_HOME}/systemd/moonraker.env
+    cp -p config/moonraker/moonraker.conf $rootfs/${MOONRAKER_RUNTIME_HOME}/config/moonraker.conf
+    $chrootdo "chown klipper: ${MOONRAKER_RUNTIME_HOME}/config/moonraker.conf"
+
+
+    # systemd services
+    cp config/systemd_services/*.service $rootfs/usr/lib/systemd/system
+    $chrootdo "systemctl enable $(cat config/services.conf)"
 
 
     $chlivedo "echo '3dprinter' > /mnt/etc/hostname"
@@ -85,17 +261,15 @@ function build_rootfs() {
     $chlivedo "echo -n > /mnt/etc/machine-id"
 
     # Configure rootfs
-    # $chrootdo "usermod -s /bin/bash klipper"
-    # $chrootdo "mkdir -p /home/klipper"
-    # $chrootdo "chown klipper: /home/klipper"
-    # $chrootdo "usermod -d /home/klipper klipper"
+    $chrootdo "usermod -s /bin/bash klipper"
+    $chrootdo "mkdir -p /home/klipper"
+    $chrootdo "chown klipper: /home/klipper"
+    $chrootdo "usermod -d /home/klipper klipper"
 
-    # $chrootdo "echo -e 'root:root\nklipper:klipper' | chpasswd"
-    $chrootdo "echo -e 'root:root\n' | chpasswd"
-    # $chrootdo "usermod -a -G wheel klipper"
+    $chrootdo "echo -e 'root:root\nklipper:klipper' | chpasswd"
+    $chrootdo "usermod -a -G wheel klipper"
     $chrootdo "echo '%wheel ALL=(ALL:ALL) ALL' >> /etc/sudoers"
 
-    # $chrootdo "systemctl enable $(cat config/services.conf)"
     $chrootdo "pacman-key --init"
     $chrootdo "pacman-key --populate archlinuxarm"
 

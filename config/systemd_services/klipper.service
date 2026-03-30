@@ -1,0 +1,17 @@
+[Unit]
+Description=3D printer firmware with motion planning on the host
+After=network.target
+
+[Install]
+WantedBy=multi-user.target
+
+[Service]
+Type=simple
+User=klipper
+Environment=PYTHONUNBUFFERED=1
+EnvironmentFile=/var/opt/moonraker/systemd/moonraker.env
+
+ExecStart=/usr/bin/python /opt/klipper/klippy/klippy.py ${MOONRAKER_RUNTIME_HOME}/config/klipper.cfg -I /run/klipper/sock -a /run/klipper/ud_sock -l /var/log/klipper/klippy.log
+RemainAfterExit=no
+Restart=always
+RestartSec=10
