@@ -1,0 +1,73 @@
+name: onecloud archlinux arm build nightly
+
+on:
+  repository_dispatch:
+  push:
+  pull_request:
+  schedule:
+    - cron: '0 0 * * *'
+
+jobs:
+  build:
+    strategy:
+      matrix:
+        os: [ubuntu-22.04]
+
+    name: Test on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup variables
+        run: |
+          echo RELEASE=$(date +%Y\/%m\/%d) >> $GITHUB_ENV
+
+
+      - name: Install dependencies
+        run: |
+          sudo apt update
+          sudo apt install make mkbootimg build-essential \
+            libncurses5-dev bison flex libssl-dev device-tree-compiler \
+            gcc-arm-none-eabi gcc-aarch64-linux-gnu bc libfdt-dev \
+            libarchive-tools arch-install-scripts qemu-user-static \
+            systemd-container gcc-arm-linux-gnueabihf
+
+      - name: Initialization submodule
+        run: git submodule update --init --depth=1
+
+      - name: Build packets
+        run: |
+              sudo bash -x ${{github.workspace}}/build.sh
+
+
+      - name: Archive artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: 3dprinter-archlinux-wifistick-${{github.run_id}}-${{github.sha}}
+          path: |
+            ${{github.workspace}}/build/system.img
+      - name: Create release
+        uses: softprops/action-gh-release@v1
+        if: github.ref == 'refs/heads/master'
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        with:
+          body: ${{env.RELEASE}}
+          tag_name: ${{env.RELEASE}}
+          draft: false
+          prerelease: false
+          files: |
+            ${{github.workspace}}/build/system.img
+      - name: Delete old releases
+        uses: dev-drprasad/delete-older-releases@v0.2.0
+        if: github.ref == 'refs/heads/master'
+        env:
+          GITHUB_TOKEN: ${{secrets.GITHUB_TOKEN}}
+        with:
+          keep_latest: 1
+          delete_tags: true
+      - name: debug
+        if: ${{ failure() }}
+        uses: csexton/debugger-action@master
