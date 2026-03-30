@@ -74,6 +74,7 @@ function build_rootfs() {
 
     cp -p /usr/bin/qemu-arm-static $rootfs/bin/qemu-arm-static
 
+    mount ${LOOP}p1 $bootfs
     # for package in $(cat config/*.aur.conf); do
     #     build_aur_package_rootfs $package
     # done
@@ -85,7 +86,7 @@ function post_build_rootfs() {
 
 function pre_build_linux()
 {
-    mount ${LOOP}p1 $bootfs
+    echo a
 }
 
 function build_linux()
