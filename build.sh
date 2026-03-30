@@ -341,6 +341,12 @@ function post_build_linux()
     $chrootdo "mkimage -A arm -O linux -T ramdisk -C gzip -n uInitrd -d /boot/initramfs-6.12.28.onecloud.img /boot/uInitrd"
 }
 
+function generate_checksum()
+{
+    sha256sum $systemimg.zst > $systemimg.zst.sha256sum
+}
+
+
 pre_build
 
 pre_build_rootfs
@@ -351,3 +357,5 @@ build_linux
 
 post_build_linux
 post_build_rootfs
+
+generate_checksum
