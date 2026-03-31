@@ -18,6 +18,7 @@ export chrootdo="systemd-nspawn -D $rootfs qemu-arm-static /bin/bash -c"
 
 export LOCALVERSION=-onecloud
 export KERNEL_VERSION=6.12.28
+export COMMIT_ID="undefined"
 
 function pre_build() {
     mkdir -p build
@@ -40,6 +41,8 @@ function pre_build() {
     LOOP=$(losetup --show --partscan --find $systemimg)
     mkfs.fat -n alarmboot  ${LOOP}p1
     mkfs.ext4 -L alarmroot ${LOOP}p2
+
+    COMMIT_ID=`git rev-parse HEAD `
 }
 
 function pre_build_rootfs() {
@@ -340,6 +343,8 @@ function post_build_linux()
     cp -r config/uboot/boot.scr $bootfs
 
     $chrootdo "mkimage -A arm -O linux -T ramdisk -C gzip -n uInitrd -d /boot/initramfs-${KERNEL_VERSION}.onecloud.img /boot/uInitrd"
+
+    echo $COMMIT_ID >> $bootfs/commit
 }
 
 function generate_checksum()
