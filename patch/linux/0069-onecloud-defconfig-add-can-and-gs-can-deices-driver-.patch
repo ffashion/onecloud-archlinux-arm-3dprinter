@@ -1,0 +1,33 @@
+From 44399aa112a629f9e7eccfc884264da86291a4da Mon Sep 17 00:00:00 2001
+From: fashion <fashion@openbfdev.com>
+Date: Wed, 1 Apr 2026 03:35:12 +0800
+Subject: [PATCH] onecloud defconfig: add can and gs can deices driver for
+ onecloud
+
+---
+ arch/arm/configs/onecloud_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/configs/onecloud_defconfig b/arch/arm/configs/onecloud_defconfig
+index 3412adc306cd..4cd7fe52a060 100644
+--- a/arch/arm/configs/onecloud_defconfig
++++ b/arch/arm/configs/onecloud_defconfig
+@@ -530,6 +530,7 @@ CONFIG_NCSI_OEM_CMD_GET_MAC=y
+ CONFIG_NCSI_OEM_CMD_KEEP_PHY=y
+ CONFIG_CGROUP_NET_PRIO=y
+ CONFIG_BPF_STREAM_PARSER=y
++CONFIG_CAN=m
+ CONFIG_BT=m
+ CONFIG_BT_RFCOMM=m
+ CONFIG_BT_RFCOMM_TTY=y
+@@ -751,6 +752,7 @@ CONFIG_DWMAC_DWC_QOS_ETH=y
+ # CONFIG_NET_VENDOR_WIZNET is not set
+ # CONFIG_NET_VENDOR_XILINX is not set
+ CONFIG_REALTEK_PHY=y
++CONFIG_CAN_GS_USB=m
+ # CONFIG_MDIO_BUS_MUX_MESON_G12A is not set
+ # CONFIG_MDIO_BUS_MUX_MESON_GXL is not set
+ CONFIG_PPP=m
+-- 
+2.43.0
+
