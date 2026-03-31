@@ -344,7 +344,9 @@ function post_build_linux()
 
 function generate_checksum()
 {
-    sha256sum $systemimg.zst > $systemimg.zst.sha256sum
+    systemimg_version=build/system-${KERNEL_VERSION}.img
+    mv $systemimg.zst $systemimg_version.zst
+    sha256sum $systemimg_version.zst > $systemimg_version.zst.sha256sum
 }
 
 
