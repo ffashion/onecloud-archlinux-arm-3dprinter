@@ -21,7 +21,7 @@ export KERNEL_VERSION=6.12.28
 
 function pre_build() {
     mkdir -p build
-    truncate --size=5120M $systemimg
+    truncate --size=4096M $systemimg
 
     OFFSET=16
     BOOTSIZE=256
