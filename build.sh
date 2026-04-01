@@ -22,7 +22,7 @@ export COMMIT_ID="undefined"
 
 function pre_build() {
     mkdir -p build
-    truncate --size=5120M $systemimg
+    truncate --size=8196M $systemimg
 
     OFFSET=16
     BOOTSIZE=256
