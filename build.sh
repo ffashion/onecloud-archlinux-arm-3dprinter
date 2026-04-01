@@ -247,6 +247,64 @@ function build_aur_package_rootfs()
     echo "build aur packaege $name to rootfs finished"
 }
 
+function build_local_package()
+{
+    echo "build local packaege $name to rootfs start"
+
+    cp -r pkg/$name $livecd/home/alarm/
+
+    # FIXME: refactor me
+    local runtimedeps=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${depends[@]}')
+    local compiledeps=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${makedepends[@]}')
+    local checkdepends=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${checkdepends[@]}')
+
+    local pkgver=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${pkgver}-${pkgrel}')
+    # local pkgarch=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${arch[@]}')
+
+    for dep in $compiledeps; do
+        if $chlivedo "pacman -Qi $dep >/dev/null 2>&1"; then
+            continue;
+        fi
+
+        if ! $chlivedo "pacman -Si $dep >/dev/null 2>&1"; then
+            build_aur_package_live $dep
+        else
+            $chlivedo "pacman --noconfirm -S $dep"
+        fi
+    done
+
+
+    for dep in $runtimedeps; do
+        build_package_rootfs $dep
+        build_package_livecd $dep
+    done
+
+    for dep in $checkdepends; do
+        if $chlivedo "pacman -Qi $dep >/dev/null 2>&1"; then
+            continue;
+        fi
+
+        if ! $chlivedo "pacman -Si $dep >/dev/null 2>&1"; then
+            build_aur_package_live $dep
+        else
+            $chlivedo "pacman --noconfirm -S $dep"
+        fi
+    done
+
+    result=`chlive_alarm_path_do "file $name/$name-*-*.pkg.tar.xz"`
+    if [[ "$result" =~ "No such file or directory" ]]; then
+        chlivealarmdo "$name" "makepkg -s --noconfirm"
+    fi
+
+    chlive_alarm_path_do "pacman --noconfirm -U $name/$name-*-*.pkg.tar.xz"
+    chlive_alarm_path_do "pacstrap -cGMU /mnt $name/$name-*-*.pkg.tar.xz"
+
+    echo "build aur packaege $name to rootfs finished"
+
+}
+
+
+
 function build_rootfs() {
 
     for package in $(cat config/*.pkg.conf); do
@@ -261,6 +319,7 @@ function build_rootfs() {
         build_aur_package_rootfs $package
     done
 
+    build_local_package fluidd
 
     # Patch Rootfs file
     cp -av patch/rootfs/. $rootfs/
