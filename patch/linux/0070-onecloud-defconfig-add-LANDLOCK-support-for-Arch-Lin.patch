@@ -1,0 +1,26 @@
+From f4c1b26b50b3a201e8ac7f68191153ff77de7157 Mon Sep 17 00:00:00 2001
+From: fashion <fashion@openbfdev.com>
+Date: Wed, 1 Apr 2026 10:24:17 +0800
+Subject: [PATCH] onecloud defconfig: add LANDLOCK support for Arch Linux
+
+---
+ arch/arm/configs/onecloud_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/arch/arm/configs/onecloud_defconfig b/arch/arm/configs/onecloud_defconfig
+index 4cd7fe52a060..0f1b8f6ccf43 100644
+--- a/arch/arm/configs/onecloud_defconfig
++++ b/arch/arm/configs/onecloud_defconfig
+@@ -1583,7 +1583,9 @@ CONFIG_UNICODE=y
+ CONFIG_PERSISTENT_KEYRINGS=y
+ CONFIG_ENCRYPTED_KEYS=y
+ CONFIG_KEY_DH_OPERATIONS=y
++CONFIG_SECURITY=y
+ CONFIG_SECURITYFS=y
++CONFIG_SECURITY_LANDLOCK=y
+ CONFIG_CRYPTO_USER=m
+ CONFIG_CRYPTO_PCRYPT=m
+ CONFIG_CRYPTO_TEST=m
+-- 
+2.43.0
+
