@@ -241,7 +241,7 @@ function build_rootfs() {
 
 
     # Patch Rootfs file
-    cp -av patch/rootfs/ $rootfs
+    cp -av patch/rootfs/. $rootfs/
 
     # $chrootdo "chown klipper: ${MOONRAKER_RUNTIME_HOME}/config/klipper.cfg"
     # $chrootdo "chown klipper: ${MOONRAKER_RUNTIME_HOME}/config/moonraker.conf"
@@ -313,8 +313,6 @@ function post_build_linux()
 
     dtbfile=arch/arm/boot/dts/amlogic/meson8b-onecloud.dtb
     cp $dtbfile ../$bootfs
-
-    cp -rp ../firmware ../$rootfs/usr/lib/firmware
 
     uimage=arch/arm/boot/uImage
     cp $uimage ../$bootfs
