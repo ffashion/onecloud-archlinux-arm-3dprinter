@@ -231,7 +231,7 @@ function build_rootfs() {
         sudo $chlivedo "pacstrap -cGM /mnt $package"
     done
 
-    cp -p /usr/bin/qemu-arm-static ç/bin/qemu-arm-static
+    cp -p /usr/bin/qemu-arm-static $rootfs/bin/qemu-arm-static
 
     mount ${LOOP}p1 $bootfs
 
