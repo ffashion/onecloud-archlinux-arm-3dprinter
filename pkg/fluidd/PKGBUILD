@@ -1,0 +1,16 @@
+pkgname=fluidd
+pkgver=0.0.1
+pkgrel=1
+pkgdesc="A lightweight and responsive web interface for Klipper"
+arch=('any')
+url="https://github.com/fluidd-core/fluidd"
+license=('GPL3')
+depends=()
+makedepends=(libarchive)
+source=("https://github.com/fluidd-core/fluidd/releases/latest/download/fluidd.zip")
+sha256sums=('SKIP')
+
+package() {
+  install -d "$pkgdir/usr/share/webapps/fluidd"
+  bsdtar -xzf "$srcdir/fluidd.zip" -C "$pkgdir/usr/share/webapps/fluidd" --strip-components=1
+}
