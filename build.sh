@@ -231,7 +231,7 @@ function build_rootfs() {
         sudo $chlivedo "pacstrap -cGM /mnt $package"
     done
 
-    cp -p /usr/bin/qemu-arm-static $rootfs/bin/qemu-arm-static
+    cp -p /usr/bin/qemu-arm-static ç/bin/qemu-arm-static
 
     mount ${LOOP}p1 $bootfs
 
@@ -239,24 +239,14 @@ function build_rootfs() {
         build_aur_package_rootfs $package
     done
 
-    # nginx
-    cp -p config/nginx/nginx.conf $rootfs/etc/nginx/
 
-    # klipper and moonraker
-    export MOONRAKER_HOME=/opt/moonraker
-    export MOONRAKER_RUNTIME_HOME=/var/opt/moonraker
-    export KLIPPER_HOME=/opt/klipper
+    # Patch Rootfs file
+    cp -av patch/rootfs/ $rootfs
 
-    # cp -p config/klipper/klipper.conf $rootfs/${MOONRAKER_RUNTIME_HOME}/config/klipper.cfg
     # $chrootdo "chown klipper: ${MOONRAKER_RUNTIME_HOME}/config/klipper.cfg"
-
-    # cp -p config/moonraker/moonraker.env $rootfs/${MOONRAKER_RUNTIME_HOME}/systemd/moonraker.env
-    # cp -p config/moonraker/moonraker.conf $rootfs/${MOONRAKER_RUNTIME_HOME}/config/moonraker.conf
     # $chrootdo "chown klipper: ${MOONRAKER_RUNTIME_HOME}/config/moonraker.conf"
 
-
     # systemd services
-    cp config/systemd_services/*.service $rootfs/usr/lib/systemd/system
     $chrootdo "systemctl enable $(cat config/services.conf)"
 
 
