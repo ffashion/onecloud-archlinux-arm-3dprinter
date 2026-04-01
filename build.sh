@@ -324,8 +324,9 @@ function build_rootfs() {
     # Patch Rootfs file
     cp -av patch/rootfs/. $rootfs/
 
-    # $chrootdo "chown klipper: ${MOONRAKER_RUNTIME_HOME}/config/klipper.cfg"
-    # $chrootdo "chown klipper: ${MOONRAKER_RUNTIME_HOME}/config/moonraker.conf"
+    export MOONRAKER_RUNTIME_HOME=/var/opt/moonraker
+    $chrootdo "chown klipper: ${MOONRAKER_RUNTIME_HOME}/config/klipper.cfg"
+    $chrootdo "chown klipper: ${MOONRAKER_RUNTIME_HOME}/config/moonraker.conf"
 
     # systemd services
     $chrootdo "systemctl enable $(cat config/services.conf)"
