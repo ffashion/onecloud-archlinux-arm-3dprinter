@@ -157,6 +157,36 @@ function build_aur_package_live()
     echo "build aur packaege $name to live finished"
 }
 
+function build_package_rootfs() {
+    local name=$1
+
+    if $chrootdo "pacman -Qi $name >/dev/null 2>&1"; then
+        return
+    fi
+
+    if $chrootdo "pacman -Si $name >/dev/null 2>&1"; then
+        $chlivedo "pacstrap -cGM /mnt $name"
+        return
+    fi
+
+    build_aur_package_rootfs $1
+}
+
+function build_package_livecd() {
+    local name=$1
+
+    if $chlivedo "pacman -Qi $name >/dev/null 2>&1"; then
+        return
+    fi
+
+    if $chrootdo "pacman -Si $name >/dev/null 2>&1"; then
+        $chlivedo "pacman --noconfirm -S $name"
+        return
+    fi
+
+    build_aur_package_live $1
+}
+
 function build_aur_package_rootfs()
 {
     local name=$1
@@ -190,16 +220,8 @@ function build_aur_package_rootfs()
 
 
     for dep in $runtimedeps; do
-        if $chrootdo "pacman -Qi $dep >/dev/null 2>&1"; then
-            continue;
-        fi
-
-        if ! $chlivedo "pacman -Si $dep >/dev/null 2>&1"; then
-            build_aur_package_rootfs $dep
-        else
-            $chlivedo "pacman --noconfirm -S $dep"
-            $chlivedo "pacstrap -cGM /mnt $dep"
-        fi
+        build_package_rootfs $dep
+        build_package_livecd $dep
     done
 
     for dep in $checkdepends; do
