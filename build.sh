@@ -270,6 +270,7 @@ function build_local_package_rootfs()
     echo "build local packaege $name to rootfs start"
 
     cp -r pkg/$name $livecd/home/alarm/
+    $chlivedo "chown -R alarm: /home/alarm/$name"
 
     build_package_rootfs $1
     echo "build local packaege $name to rootfs finished"
