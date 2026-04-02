@@ -436,22 +436,22 @@ function generate_checksum()
     sha256sum $systemimg_version.zst > $systemimg_version.zst.sha256sum
 
 	burnimg_version=build/burn-${KERNEL_VERSION}.img
-	mv $burnimg.zst $burnimg_version
+	mv $burnimg.zst $burnimg_version.zst
 
 	sha256sum $burnimg_version.zst > $burnimg_version.zst.sha256sum
 }
 
 
-# pre_build
+pre_build
 
-# pre_build_rootfs
-# pre_build_linux
+pre_build_rootfs
+pre_build_linux
 
-# build_rootfs
-# build_linux
+build_rootfs
+build_linux
 
-# post_build_linux
-# post_build_rootfs
+post_build_linux
+post_build_rootfs
 
-# build_burn_img
-# generate_checksum
+build_burn_img
+generate_checksum
