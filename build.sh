@@ -388,6 +388,53 @@ function post_build_linux()
     echo $COMMIT_ID >> $bootfs/commit
 }
 
+function build_burn_img()
+{
+    UBOOT_REPO=hzyitc/u-boot-onecloud
+    UBOOT_RELEASE=latest
+    UBOOT_BURNIMG=eMMC.burn.img
+
+    cd build
+	mkdir -p burn
+    local ver="v0.3.1"
+    curl -L -o ./AmlImg https://github.com/hzyitc/AmlImg/releases/download/$ver/AmlImg_${ver}_linux_amd64
+    chmod +x ./AmlImg
+
+
+    echo "::group::Download"
+    curl -L -o ./uboot.img https://github.com/${UBOOT_REPO}/releases/download/${UBOOT_TAG}/${UBOOT_BURNIMG}
+    echo "::endgroup::"
+
+    echo "::group::Unpack"
+    ./AmlImg unpack ./uboot.img burn/
+    echo "::endgroup::"
+
+
+    loop=$(sudo losetup --find --show --partscan $systemimg)
+    sudo img2simg ${loop}p1 burn/boot.simg
+    sudo img2simg ${loop}p2 burn/rootfs.simg
+    sudo losetup -d $loop
+    sudo chown $(id -u):$(id -g) -R burn/
+
+
+    echo -n "sha1sum $(sha1sum burn/boot.simg | awk '{print $1}')" >burn/boot.VERIFY
+    echo -n "sha1sum $(sha1sum burn/rootfs.simg | awk '{print $1}')" >burn/rootfs.VERIFY
+
+	printf '%s\n' \
+		"PARTITION:boot:sparse:boot.simg" \
+		"VERIFY:boot:normal:boot.VERIFY" \
+		"PARTITION:rootfs:sparse:rootfs.simg" \
+		"VERIFY:rootfs:normal:rootfs.VERIFY" \
+    >> burn/commands.txt
+
+
+    burnimg=system-$KERNEL_VERSION.burn.img
+    ./AmlImg pack $burnimg burn/
+
+    cd -
+
+}
+
 function generate_checksum()
 {
     systemimg_version=build/system-${KERNEL_VERSION}.img
@@ -407,4 +454,5 @@ build_linux
 post_build_linux
 post_build_rootfs
 
+build_burn_img
 generate_checksum
