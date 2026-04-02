@@ -297,10 +297,6 @@ function build_rootfs() {
 
 	(cd patch/rootfs && tar -c --owner=root --group=root .) | (cd "$rootfs" && tar -xp)
 
-    export MOONRAKER_RUNTIME_HOME=/var/opt/moonraker
-    $chrootdo "chown klipper: ${MOONRAKER_RUNTIME_HOME}/config/klipper.cfg"
-    $chrootdo "chown klipper: ${MOONRAKER_RUNTIME_HOME}/config/moonraker.conf"
-
     # systemd services
     $chrootdo "systemctl enable $(cat config/services.conf)"
 
