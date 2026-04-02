@@ -293,8 +293,9 @@ function build_rootfs() {
 
     build_local_package_rootfs fluidd
 
-    # Patch Rootfs file
-    cp -av patch/rootfs/. $rootfs/
+    # Patch Rootfs file and set This file owner to root
+
+	(cd patch/rootfs && tar -c --owner=root --group=root .) | (cd "$rootfs" && tar -xp)
 
     export MOONRAKER_RUNTIME_HOME=/var/opt/moonraker
     $chrootdo "chown klipper: ${MOONRAKER_RUNTIME_HOME}/config/klipper.cfg"
@@ -445,16 +446,16 @@ function generate_checksum()
 }
 
 
-pre_build
+# pre_build
 
-pre_build_rootfs
-pre_build_linux
+# pre_build_rootfs
+# pre_build_linux
 
-build_rootfs
-build_linux
+# build_rootfs
+# build_linux
 
-post_build_linux
-post_build_rootfs
+# post_build_linux
+# post_build_rootfs
 
-build_burn_img
-generate_checksum
+# build_burn_img
+# generate_checksum
