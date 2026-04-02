@@ -249,6 +249,7 @@ function build_aur_package_rootfs()
 
 function build_local_package()
 {
+    name=$1
     echo "build local packaege $name to rootfs start"
 
     cp -r pkg/$name $livecd/home/alarm/
