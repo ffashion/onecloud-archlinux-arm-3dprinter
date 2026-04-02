@@ -1,0 +1,5 @@
+[Match]
+Name=can0
+
+[Link]
+TransmitQueueLength=128
