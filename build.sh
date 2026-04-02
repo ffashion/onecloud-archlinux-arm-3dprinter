@@ -157,7 +157,7 @@ function build_aur_package_live()
     echo "build aur packaege $name to live finished"
 }
 
-function build_package_rootfs() {
+function build_pacman_aur_package_rootfs() {
     local name=$1
 
     if $chrootdo "pacman -Qi $name >/dev/null 2>&1"; then
@@ -172,7 +172,7 @@ function build_package_rootfs() {
     build_aur_package_rootfs $1
 }
 
-function build_package_livecd() {
+function build_pacman_aur_package_livecd() {
     local name=$1
 
     if $chlivedo "pacman -Qi $name >/dev/null 2>&1"; then
@@ -187,6 +187,66 @@ function build_package_livecd() {
     build_aur_package_live $1
 }
 
+function build_package_rootfs()
+{
+    local name=$1
+
+    echo "build packaege $name to rootfs start"
+
+    result=`chlive_alarm_path_do "file $name"`
+    if [[ "$result" =~ "No such file or directory" ]]; then
+        echo "no have this package"
+        return -1
+    fi
+
+    local runtimedeps=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${depends[@]}')
+    local compiledeps=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${makedepends[@]}')
+    local checkdepends=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${checkdepends[@]}')
+
+    local pkgver=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${pkgver}-${pkgrel}')
+    # local pkgarch=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${arch[@]}')
+
+    for dep in $compiledeps; do
+        if $chlivedo "pacman -Qi $dep >/dev/null 2>&1"; then
+            continue;
+        fi
+
+        if ! $chlivedo "pacman -Si $dep >/dev/null 2>&1"; then
+            build_aur_package_live $dep
+        else
+            $chlivedo "pacman --noconfirm -S $dep"
+        fi
+    done
+
+
+    for dep in $runtimedeps; do
+        build_pacman_aur_package_rootfs $dep
+        build_pacman_aur_package_livecd $dep
+    done
+
+    for dep in $checkdepends; do
+        if $chlivedo "pacman -Qi $dep >/dev/null 2>&1"; then
+            continue;
+        fi
+
+        if ! $chlivedo "pacman -Si $dep >/dev/null 2>&1"; then
+            build_aur_package_live $dep
+        else
+            $chlivedo "pacman --noconfirm -S $dep"
+        fi
+    done
+
+    result=`chlive_alarm_path_do "file $name/$name-*-*.pkg.tar.xz"`
+    if [[ "$result" =~ "No such file or directory" ]]; then
+        chlivealarmdo "$name" "makepkg -s --noconfirm"
+    fi
+
+    chlive_alarm_path_do "pacman --noconfirm -U $name/$name-*-*.pkg.tar.xz"
+    chlive_alarm_path_do "pacstrap -cGMU /mnt $name/$name-*-*.pkg.tar.xz"
+
+    echo "build aur packaege $name to rootfs finished"
+}
+
 function build_aur_package_rootfs()
 {
     local name=$1
@@ -199,112 +259,21 @@ function build_aur_package_rootfs()
         chlivealarmdo "" "git clone $project_url $name"
     fi
 
-    local runtimedeps=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${depends[@]}')
-    local compiledeps=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${makedepends[@]}')
-    local checkdepends=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${checkdepends[@]}')
 
-    local pkgver=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${pkgver}-${pkgrel}')
-    # local pkgarch=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${arch[@]}')
-
-    for dep in $compiledeps; do
-        if $chlivedo "pacman -Qi $dep >/dev/null 2>&1"; then
-            continue;
-        fi
-
-        if ! $chlivedo "pacman -Si $dep >/dev/null 2>&1"; then
-            build_aur_package_live $dep
-        else
-            $chlivedo "pacman --noconfirm -S $dep"
-        fi
-    done
-
-
-    for dep in $runtimedeps; do
-        build_package_rootfs $dep
-        build_package_livecd $dep
-    done
-
-    for dep in $checkdepends; do
-        if $chlivedo "pacman -Qi $dep >/dev/null 2>&1"; then
-            continue;
-        fi
-
-        if ! $chlivedo "pacman -Si $dep >/dev/null 2>&1"; then
-            build_aur_package_live $dep
-        else
-            $chlivedo "pacman --noconfirm -S $dep"
-        fi
-    done
-
-    result=`chlive_alarm_path_do "file $name/$name-*-*.pkg.tar.xz"`
-    if [[ "$result" =~ "No such file or directory" ]]; then
-        chlivealarmdo "$name" "makepkg -s --noconfirm"
-    fi
-
-    chlive_alarm_path_do "pacman --noconfirm -U $name/$name-*-*.pkg.tar.xz"
-    chlive_alarm_path_do "pacstrap -cGMU /mnt $name/$name-*-*.pkg.tar.xz"
-
+    build_package_rootfs $1
     echo "build aur packaege $name to rootfs finished"
 }
 
-function build_local_package()
+function build_local_package_rootfs()
 {
     name=$1
     echo "build local packaege $name to rootfs start"
 
     cp -r pkg/$name $livecd/home/alarm/
 
-    # FIXME: refactor me
-    local runtimedeps=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${depends[@]}')
-    local compiledeps=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${makedepends[@]}')
-    local checkdepends=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${checkdepends[@]}')
-
-    local pkgver=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${pkgver}-${pkgrel}')
-    # local pkgarch=$(chlivealarmdo "$name" 'source PKGBUILD && echo ${arch[@]}')
-
-    for dep in $compiledeps; do
-        if $chlivedo "pacman -Qi $dep >/dev/null 2>&1"; then
-            continue;
-        fi
-
-        if ! $chlivedo "pacman -Si $dep >/dev/null 2>&1"; then
-            build_aur_package_live $dep
-        else
-            $chlivedo "pacman --noconfirm -S $dep"
-        fi
-    done
-
-
-    for dep in $runtimedeps; do
-        build_package_rootfs $dep
-        build_package_livecd $dep
-    done
-
-    for dep in $checkdepends; do
-        if $chlivedo "pacman -Qi $dep >/dev/null 2>&1"; then
-            continue;
-        fi
-
-        if ! $chlivedo "pacman -Si $dep >/dev/null 2>&1"; then
-            build_aur_package_live $dep
-        else
-            $chlivedo "pacman --noconfirm -S $dep"
-        fi
-    done
-
-    result=`chlive_alarm_path_do "file $name/$name-*-*.pkg.tar.xz"`
-    if [[ "$result" =~ "No such file or directory" ]]; then
-        chlivealarmdo "$name" "makepkg -s --noconfirm"
-    fi
-
-    chlive_alarm_path_do "pacman --noconfirm -U $name/$name-*-*.pkg.tar.xz"
-    chlive_alarm_path_do "pacstrap -cGMU /mnt $name/$name-*-*.pkg.tar.xz"
-
-    echo "build aur packaege $name to rootfs finished"
-
+    build_package_rootfs $1
+    echo "build local packaege $name to rootfs finished"
 }
-
-
 
 function build_rootfs() {
 
@@ -320,7 +289,7 @@ function build_rootfs() {
         build_aur_package_rootfs $package
     done
 
-    build_local_package fluidd
+    build_local_package_rootfs fluidd
 
     # Patch Rootfs file
     cp -av patch/rootfs/. $rootfs/
