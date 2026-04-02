@@ -410,7 +410,7 @@ function build_burn_img()
     echo "::endgroup::"
 
 
-    loop=$(sudo losetup --find --show --partscan $systemimg)
+    loop=$(sudo losetup --find --show --partscan system.img)
     sudo img2simg ${loop}p1 burn/boot.simg
     sudo img2simg ${loop}p2 burn/rootfs.simg
     sudo losetup -d $loop
