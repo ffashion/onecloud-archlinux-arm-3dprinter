@@ -402,7 +402,7 @@ function build_burn_img()
 
 
     echo "::group::Download"
-    curl -L -o ./uboot.img https://github.com/${UBOOT_REPO}/releases/download/${UBOOT_TAG}/${UBOOT_BURNIMG}
+    curl -L -o ./uboot.img https://github.com/${UBOOT_REPO}/releases/$UBOOT_RELEASE/download/${UBOOT_BURNIMG}
     echo "::endgroup::"
 
     echo "::group::Unpack"
