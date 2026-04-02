@@ -1,9 +1,14 @@
 [Unit]
-Description=Resize the root filesystem to fill partition
+Description=Set Onecloud Led
 
 [Service]
 Type=oneshot
-ExecStart=echo 1 > /sys/class/leds/c1\:blue\:alive/brightness
+
+ExecStart=echo 0 > /sys/class/leds/onecloud\:green\:alive/brightness
+ExecStart=echo 0 > /sys/class/leds/onecloud\:red\:alive/brightness
+ExecStart=echo 0 > /sys/class/leds/onecloud\:blue\:alive/brightness
+ExecStart=echo 1 > /sys/class/leds/onecloud\:green\:alive/brightness
+
 
 [Install]
 WantedBy=multi-user.target
