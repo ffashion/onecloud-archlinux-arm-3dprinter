@@ -9,6 +9,7 @@ set -ev
 livecd="build/livecd"
 
 systemimg="build/system.img"
+burnimg="build/burn.img"
 bootfs=$livecd/mnt/boot
 rootfs=$livecd/mnt
 
@@ -394,45 +395,41 @@ function build_burn_img()
     UBOOT_RELEASE=latest
     UBOOT_BURNIMG=eMMC.burn.img
 
-    cd build
-	mkdir -p burn
+	mkdir -p build/burn
     local ver="v0.3.1"
-    curl -L -o ./AmlImg https://github.com/hzyitc/AmlImg/releases/download/$ver/AmlImg_${ver}_linux_amd64
-    chmod +x ./AmlImg
+    curl -L -o ./build/AmlImg https://github.com/hzyitc/AmlImg/releases/download/$ver/AmlImg_${ver}_linux_amd64
+    chmod +x ./build/AmlImg
 
 
     echo "::group::Download"
-    curl -L -o ./uboot.img https://github.com/${UBOOT_REPO}/releases/$UBOOT_RELEASE/download/${UBOOT_BURNIMG}
+    curl -L -o ./build/uboot.img https://github.com/${UBOOT_REPO}/releases/$UBOOT_RELEASE/download/${UBOOT_BURNIMG}
     echo "::endgroup::"
 
     echo "::group::Unpack"
-    ./AmlImg unpack ./uboot.img burn/
+    ./build/AmlImg unpack ./build/uboot.img build/burn/
     echo "::endgroup::"
 
 
-    loop=$(sudo losetup --find --show --partscan system.img)
-    sudo img2simg ${loop}p1 burn/boot.simg
-    sudo img2simg ${loop}p2 burn/rootfs.simg
+    loop=$(sudo losetup --find --show --partscan $systemimg)
+    sudo img2simg ${loop}p1 build/burn/boot.simg
+    sudo img2simg ${loop}p2 build/burn/rootfs.simg
     sudo losetup -d $loop
-    sudo chown $(id -u):$(id -g) -R burn/
+    sudo chown $(id -u):$(id -g) -R build/burn/
 
 
-    echo -n "sha1sum $(sha1sum burn/boot.simg | awk '{print $1}')" >burn/boot.VERIFY
-    echo -n "sha1sum $(sha1sum burn/rootfs.simg | awk '{print $1}')" >burn/rootfs.VERIFY
+    echo -n "sha1sum $(sha1sum build/burn/boot.simg | awk '{print $1}')" > build/burn/boot.VERIFY
+    echo -n "sha1sum $(sha1sum build/burn/rootfs.simg | awk '{print $1}')" > build/burn/rootfs.VERIFY
 
 	printf '%s\n' \
 		"PARTITION:boot:sparse:boot.simg" \
 		"VERIFY:boot:normal:boot.VERIFY" \
 		"PARTITION:rootfs:sparse:rootfs.simg" \
 		"VERIFY:rootfs:normal:rootfs.VERIFY" \
-    >> burn/commands.txt
+    >> build/burn/commands.txt
 
+    ./build/AmlImg pack $burnimg build/burn/
 
-    burnimg=system-$KERNEL_VERSION.burn.img
-    ./AmlImg pack $burnimg burn/
-
-    cd -
-
+	zstd $burnimg -o $burnimg.zst
 }
 
 function generate_checksum()
@@ -440,6 +437,11 @@ function generate_checksum()
     systemimg_version=build/system-${KERNEL_VERSION}.img
     mv $systemimg.zst $systemimg_version.zst
     sha256sum $systemimg_version.zst > $systemimg_version.zst.sha256sum
+
+	burnimg_version=build/burn-${KERNEL_VERSION}.img
+	mv $burnimg.zst $burnimg_version
+
+	sha256sum $burnimg_version.zst > $burnimg_version.zst.sha256sum
 }
 
 
