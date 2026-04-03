@@ -136,9 +136,16 @@ dup_disk() {
     echo "Copying VAR..."
     tar -cf - var | (cd $ROOTFS; tar -xpf -)
 
-    echo "Copying fstab..."
-    rm $ROOTFS/etc/fstab
-    cp -a /etc/fstab $ROOTFS/etc/fstab
+    echo "Generate fstab..."
+
+    BOOTFS_UUID="$(blkid -s UUID -o value ${DISK_BOOT})"
+	ROOTFS_UUID="$(blkid -s UUID -o value ${DISK_ROOT})"
+
+    printf '%s\n' \
+		"UUID=$ROOTFS_UUID / ext4 defaults,noatime,nodiratime,commit=600,errors=remount-ro 0 1" \
+		"UUID=$BOOTFS_UUID  /boot vfat defaults 0 2" \
+		"tmpfs /tmp tmpfs defaults,nosuid 0 0" \
+    > $ROOTFS/etc/fstab
 
     # echo "Changing MAC..."
     # cp -p $ROOTFS/etc/network/interfaces.default $ROOTFS/etc/network/interfaces
