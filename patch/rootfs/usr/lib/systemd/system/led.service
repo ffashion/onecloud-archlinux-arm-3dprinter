@@ -1,6 +1,6 @@
 [Unit]
 Description=Set Onecloud Led
-After=klipper.service moonraker.service
+After=klipper.service moonraker.service nginx.service
 
 [Service]
 Type=oneshot
