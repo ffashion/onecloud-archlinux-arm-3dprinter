@@ -302,10 +302,10 @@ function build_rootfs() {
 	ROOTFS_UUID="$(blkid -s UUID -o value ${LOOP}p2)"
 
 	printf '%s\n' \
-		"LABEL=$ROOTFS_UUID / ext4 defaults,noatime,nodiratime,commit=600,errors=remount-ro 0 1" \
-		"LABEL=$BOOTFS_UUID  /boot vfat defaults 0 2" \
+		"UUID=$ROOTFS_UUID / ext4 defaults,noatime,nodiratime,commit=600,errors=remount-ro 0 1" \
+		"UUID=$BOOTFS_UUID  /boot vfat defaults 0 2" \
 		"tmpfs /tmp tmpfs defaults,nosuid 0 0" \
-    > $rootfs/etc/fstab
+    >> $rootfs/etc/fstab
 
 	# Use tmpfiles have unsefe check. So chown
 	export MOONRAKER_RUNTIME_HOME=/var/opt/moonraker
