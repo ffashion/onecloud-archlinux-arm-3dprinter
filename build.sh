@@ -43,7 +43,7 @@ function pre_build() {
     mkfs.fat -n alarmboot  ${LOOP}p1
     mkfs.ext4 -L alarmroot ${LOOP}p2
 
-    COMMIT_ID=`git rev-parse HEAD `
+    COMMIT_ID=`git rev-parse HEAD`
 }
 
 function pre_build_rootfs() {
@@ -297,6 +297,16 @@ function build_rootfs() {
 
 	(cd patch/rootfs && tar -c --owner=root --group=root .) | (cd "$rootfs" && tar -xp)
 
+	# Update fstab
+	BOOTFS_UUID="$(blkid -s UUID -o value ${LOOP}p1)"
+	ROOTFS_UUID="$(blkid -s UUID -o value ${LOOP}p2)"
+
+	printf '%s\n' \
+		"LABEL=$ROOTFS_UUID / ext4 defaults,noatime,nodiratime,commit=600,errors=remount-ro 0 1" \
+		"LABEL=$BOOTFS_UUID  /boot vfat defaults 0 2" \
+		"tmpfs /tmp tmpfs defaults,nosuid 0 0" \
+    > $rootfs/etc/fstab
+
 	# Use tmpfiles have unsefe check. So chown
 	export MOONRAKER_RUNTIME_HOME=/var/opt/moonraker
     $chrootdo "chown klipper: ${MOONRAKER_RUNTIME_HOME}/config/klipper.cfg"
@@ -378,6 +388,7 @@ function post_build_linux()
 
     # Process uboot
 
+	# fix mkinitcpio warnning
     $chrootdo "echo '#KEYMAP=us' > /etc/vconsole.conf"
     $chrootdo "mkinitcpio -k ${KERNEL_VERSION}${LOCALVERSION} -g /boot/initramfs-${KERNEL_VERSION}.onecloud.img"
 
