@@ -121,9 +121,6 @@ dup_disk() {
     echo "Copying SBIN..."
     tar -cf - sbin | (cd $ROOTFS; tar -xpf -)
 
-    echo "Copying SELINUX..."
-    tar -cf - selinux | (cd $ROOTFS; tar -xpf -)
-
     echo "Copying SRV..."
     tar -cf - srv | (cd $ROOTFS; tar -xpf -)
 
