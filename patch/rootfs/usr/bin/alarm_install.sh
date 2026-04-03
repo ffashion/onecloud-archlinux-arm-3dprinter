@@ -15,14 +15,16 @@ else
 fi
 
 DEV_EMMC=/dev/${DEV}
-DEV_BOOT0=${DEV_EMMC}boot0
-DEV_BOOT1=${DEV_EMMC}boot1
 
-PART_BOOT=${DEV_EMMC}p1
-PART_ROOT=${DEV_EMMC}p2
+DISK_BOOT=${DEV_EMMC}p1
+DISK_ROOT=${DEV_EMMC}p2
 
-rm -f /etc/machine-id
-systemd-machine-id-setup
+ROOTFS=/install/rootfs
+BOOTFS=/install/bootfs
+
+
+# rm -f /etc/machine-id
+# systemd-machine-id-setup
 
 if [ -z "$MAC" ]; then
 	MAC=$(dd if=/dev/urandom bs=1024 count=1 2>/dev/null | md5sum | sed -e 's/^\(..\)\(..\)\(..\)\(..\).*$/00:22:\1:\2:\3:\4/' -e 's/^\(.\)[13579bdf]/\10/')
@@ -31,125 +33,135 @@ if [ -z "$MAC" ]; then
 	    MAC=$(openssl x509 -in /opt/client.crt -noout --text | grep "Subject:" | awk '{print $10}' | awk -F '[' '{print $2}' | awk -F ']' '{print $1}')
 	}
 fi
-echo "MAC: ${MAC} created."
 
-echo "Creating MBR and partittion..."
-
-parted -s "${DEV_EMMC}" mklabel msdos
-parted -s "${DEV_EMMC}" mkpart primary fat32 108M 620M
-parted -s "${DEV_EMMC}" mkpart primary ext4  724M 100%
-
-echo "Copying system files to the eMMC..."
-
-mkdir -p /ddbr
-chmod 777 /ddbr
-
-DIR_INSTALL="/ddbr/install"
-
-if [ -d $DIR_INSTALL ] ; then
-    rm -rf $DIR_INSTALL
-fi
-mkdir -p $DIR_INSTALL
-
-if grep -q $PART_BOOT /proc/mounts ; then
-    echo "Unmounting BOOT partiton."
-    umount -f $PART_BOOT
-fi
-
-echo -n "Formatting BOOT partition..."
-mkfs.vfat -n "alarmboot" $PART_BOOT
-echo "done."
-
-mount -o rw $PART_BOOT $DIR_INSTALL
-
-echo -n "Copying BOOT..."
-cp -r /boot/* $DIR_INSTALL
-sync
-echo "done."
-
-umount $DIR_INSTALL
-
-if grep -q $PART_ROOT /proc/mounts ; then
-    echo "Unmounting ROOT partiton."
-    umount -f $PART_ROOT
-fi
-
-echo "Formatting ROOT partition..."
-mke2fs -F -q -t ext4 -L alarmroot -m 0 $PART_ROOT
-e2fsck -n $PART_ROOT
-echo "done."
-
-echo "Copying ROOTFS."
-mount -o rw $PART_ROOT $DIR_INSTALL
-
-cd /
-echo "Copying BIN..."
-tar -cf - bin | (cd $DIR_INSTALL; tar -xpf -)
-
-echo "Creating DEV..."
-mkdir -p $DIR_INSTALL/dev
+pre_env() {
+    rm -rf $BOOTFS $ROOTFS
+    install -d $BOOTFS
+    install -d $ROOTFS
+}
 
 
-echo "Copying ETC..."
-tar -cf - etc | (cd $DIR_INSTALL; tar -xpf -)
+formate_disk() {
+    echo "Creating MBR and partittion..."
+    parted -s "${DEV_EMMC}" mklabel msdos
+    parted -s "${DEV_EMMC}" mkpart primary fat32 108M 620M
+    parted -s "${DEV_EMMC}" mkpart primary ext4  724M 100%
 
-echo "Copying HOME..."
-tar -cf - home | (cd $DIR_INSTALL; tar -xpf -)
+    echo -n "Formatting BOOT partition..."
+    mkfs.vfat -n "alarmboot" $DISK_BOOT
+    echo "done."
 
-echo "Copying LIB..."
-tar -cf - lib | (cd $DIR_INSTALL; tar -xpf -)
+    echo "Formatting ROOT partition..."
+    mke2fs -F -q -t ext4 -L alarmroot -m 0 $DISK_ROOT
+    e2fsck -n $DISK_ROOT
+    echo "done."
 
-echo "Creating MEDIA..."
-mkdir -p $DIR_INSTALL/media
+}
 
-echo "Creating MNT..."
-mkdir -p $DIR_INSTALL/mnt
+mount_disk() {
+    if grep -q $DISK_BOOT /proc/mounts ; then
+        echo "Unmounting BOOT partiton."
+        umount -f $DISK_BOOT
+    fi
 
-echo "Copying OPT..."
-tar -cf - opt | (cd $DIR_INSTALL; tar -xpf -)
+    mount -o rw $DISK_BOOT $BOOTFS
 
-echo "Creating PROC..."
-mkdir -p $DIR_INSTALL/proc
+    if grep -q $DISK_ROOT /proc/mounts ; then
+        echo "Unmounting ROOT partiton."
+        umount -f $DISK_ROOT
+    fi
 
-echo "Copying ROOT..."
-tar -cf - root | (cd $DIR_INSTALL; tar -xpf -)
+    mount -o rw $DISK_ROOT $ROOTFS
+}
 
-echo "Creating RUN..."
-mkdir -p $DIR_INSTALL/run
+dup_disk() {
+    echo "Copying ROOTFS."
 
-echo "Copying SBIN..."
-tar -cf - sbin | (cd $DIR_INSTALL; tar -xpf -)
+    echo -n "Copying BOOT..."
 
-echo "Copying SELINUX..."
-tar -cf - selinux | (cd $DIR_INSTALL; tar -xpf -)
+    cp -r /boot/* $BOOTFS
+    sync
+    echo "done."
 
-echo "Copying SRV..."
-tar -cf - srv | (cd $DIR_INSTALL; tar -xpf -)
+    cd /
+    echo "Copying BIN..."
+    tar -cf - bin | (cd $ROOTFS; tar -xpf -)
 
-echo "Creating SYS..."
-mkdir -p $DIR_INSTALL/sys
+    echo "Creating DEV..."
+    mkdir -p $ROOTFS/dev
 
-echo "Creating TMP..."
-mkdir -p $DIR_INSTALL/tmp
 
-echo "Copying USR..."
-tar -cf - usr | (cd $DIR_INSTALL; tar -xpf -)
+    echo "Copying ETC..."
+    tar -cf - etc | (cd $ROOTFS; tar -xpf -)
 
-echo "Copying VAR..."
-tar -cf - var | (cd $DIR_INSTALL; tar -xpf -)
+    echo "Copying HOME..."
+    tar -cf - home | (cd $ROOTFS; tar -xpf -)
 
-echo "Copying fstab..."
-rm $DIR_INSTALL/etc/fstab
-cp -a /etc/fstab $DIR_INSTALL/etc/fstab
+    echo "Copying LIB..."
+    tar -cf - lib | (cd $ROOTFS; tar -xpf -)
 
-echo "Changing MAC..."
-cp -p $DIR_INSTALL/etc/network/interfaces.default $DIR_INSTALL/etc/network/interfaces
-sed -i '/iface eth0 inet dhcp/a\hwaddress '${MAC} $DIR_INSTALL/etc/network/interfaces
+    echo "Creating MEDIA..."
+    mkdir -p $ROOTFS/media
 
-cd /
-sync
+    echo "Creating MNT..."
+    mkdir -p $ROOTFS/mnt
 
-umount $DIR_INSTALL
+    echo "Copying OPT..."
+    tar -cf - opt | (cd $ROOTFS; tar -xpf -)
+
+    echo "Creating PROC..."
+    mkdir -p $ROOTFS/proc
+
+    echo "Copying ROOT..."
+    tar -cf - root | (cd $ROOTFS; tar -xpf -)
+
+    echo "Creating RUN..."
+    mkdir -p $ROOTFS/run
+
+    echo "Copying SBIN..."
+    tar -cf - sbin | (cd $ROOTFS; tar -xpf -)
+
+    echo "Copying SELINUX..."
+    tar -cf - selinux | (cd $ROOTFS; tar -xpf -)
+
+    echo "Copying SRV..."
+    tar -cf - srv | (cd $ROOTFS; tar -xpf -)
+
+    echo "Creating SYS..."
+    mkdir -p $ROOTFS/sys
+
+    echo "Creating TMP..."
+    mkdir -p $ROOTFS/tmp
+
+    echo "Copying USR..."
+    tar -cf - usr | (cd $ROOTFS; tar -xpf -)
+
+    echo "Copying VAR..."
+    tar -cf - var | (cd $ROOTFS; tar -xpf -)
+
+    echo "Copying fstab..."
+    rm $ROOTFS/etc/fstab
+    cp -a /etc/fstab $ROOTFS/etc/fstab
+
+    # echo "Changing MAC..."
+    # cp -p $ROOTFS/etc/network/interfaces.default $ROOTFS/etc/network/interfaces
+    # sed -i '/iface eth0 inet dhcp/a\hwaddress '${MAC} $ROOTFS/etc/network/interfaces
+
+    cd /
+    sync
+}
+
+function cleanup() {
+    umount $BOOTFS
+    umount $ROOTFS
+    rm -rf /install
+}
+
+pre_env
+formate_disk
+mount_disk
+dup_disk
+cleanup
 
 echo "*******************************************"
 echo " ArchLinux arm has been installed to eMMC. Now   "
