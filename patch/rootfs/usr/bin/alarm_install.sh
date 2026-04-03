@@ -4,7 +4,7 @@
 # Copyright(c) 2026 ffashion <helloworldffashion@gmail.com>
 #
 
-set -ev
+set -e
 MAC=""
 echo "Installing Archlinux arm OS to the eMMC... Please wait..."
 
