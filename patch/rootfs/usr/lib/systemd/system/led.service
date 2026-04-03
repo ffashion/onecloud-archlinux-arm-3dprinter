@@ -1,14 +1,13 @@
 [Unit]
 Description=Set Onecloud Led
+After=klipper.service moonraker.service
 
 [Service]
 Type=oneshot
-
-ExecStart=echo 0 > /sys/class/leds/onecloud\:green\:alive/brightness
-ExecStart=echo 0 > /sys/class/leds/onecloud\:red\:alive/brightness
-ExecStart=echo 0 > /sys/class/leds/onecloud\:blue\:alive/brightness
-ExecStart=echo 1 > /sys/class/leds/onecloud\:green\:alive/brightness
-
+ExecStart=/bin/sh -c 'echo 0 > /sys/class/leds/onecloud:green:alive/brightness'
+ExecStart=/bin/sh -c 'echo 0 > /sys/class/leds/onecloud:red:alive/brightness'
+ExecStart=/bin/sh -c 'echo 0 > /sys/class/leds/onecloud:blue:alive/brightness'
+ExecStart=/bin/sh -c 'echo 1 > /sys/class/leds/onecloud:green:alive/brightness'
 
 [Install]
 WantedBy=multi-user.target
