@@ -1,19 +1,15 @@
-From 0000000000000000000000000000000000000000 Mon Sep 17 00:00:00 2001
-From: hzy <hzyitc@outlook.com>
-Date: Sat, 1 Apr 2023 10:26:14 +0800
-Subject: ARM: dts: meson8b: onecloud: Support HDMI
+dts: Support HDMI
 
-Signed-off-by: hzy <hzyitc@outlook.com>
 ---
- arch/arm/boot/dts/amlogic/meson8b-onecloud.dts | 58 ++++++++++
+ arch/arm/boot/dts/meson8b-onecloud.dts | 58 ++++++++++++++++++++++++++
  1 file changed, 58 insertions(+)
 
-diff --git a/arch/arm/boot/dts/amlogic/meson8b-onecloud.dts b/arch/arm/boot/dts/amlogic/meson8b-onecloud.dts
-index 111111111111..222222222222 100644
---- a/arch/arm/boot/dts/amlogic/meson8b-onecloud.dts
-+++ b/arch/arm/boot/dts/amlogic/meson8b-onecloud.dts
-@@ -80,6 +80,48 @@ blue {
- 		};
+diff --git a/arch/arm/boot/dts/meson8b-onecloud.dts b/arch/arm/boot/dts/meson8b-onecloud.dts
+index 050b2e65348..69fff33c496 100644
+--- a/arch/arm/boot/dts/meson8b-onecloud.dts
++++ b/arch/arm/boot/dts/meson8b-onecloud.dts
+@@ -32,6 +32,48 @@ emmc_pwrseq: emmc-pwrseq {
+ 		reset-gpios = <&gpio BOOT_9 GPIO_ACTIVE_LOW>;
  	};
  
 +	hdmi-connector {
@@ -58,22 +54,22 @@ index 111111111111..222222222222 100644
 +		};
 +	};
 +
- 	p12v: regulator-p12v {
- 		compatible = "regulator-fixed";
- 
-@@ -199,6 +241,10 @@ &mali {
- 	// mali-supply = <&vcc_core>;
+ 	button {
+ 		// compatible = "gpio-keys-polled";
+ 		// poll-interval = <100>;
+@@ -142,6 +184,10 @@ vcc_core: regulator-vcc-core {
+ 	};
  };
  
 +&aiu {
 +	status = "okay";
 +};
 +
- &gpio {
- 	gpio-line-names =
- 		/*  0 */ "WIFI_SDIO_D0 PIN18 (GPIOX_0)",
-@@ -403,6 +449,18 @@ &usb1_phy {
- 	status = "okay";
+ &cpu0 {
+ 	cpu-supply = <&vcc_core>;
+ };
+@@ -150,6 +196,18 @@ &mali {
+ 	mali-supply = <&vcc_core>;
  };
  
 +&hdmi_tx {
@@ -88,9 +84,9 @@ index 111111111111..222222222222 100644
 +	};
 +};
 +
- &ir_receiver {
- 	status = "okay";
- 	pinctrl-0 = <&ir_recv_pins>;
+ &gpio {
+ 	gpio-line-names =
+ 		// 0-3 Bank GPIOX 0-3
 -- 
-Armbian
+2.25.1
 
