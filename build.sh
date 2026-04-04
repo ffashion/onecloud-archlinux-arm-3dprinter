@@ -378,7 +378,7 @@ function post_build_linux()
     make ARCH=arm INSTALL_HDR_PATH=../$rootfs headers_install
     make ARCH=arm INSTALL_PATH=../$bootfs install
 
-    dtbfile=arch/arm/boot/dts/amlogic/meson8b-onecloud.dtb
+    dtbfile=arch/arm/boot/dts/meson8b-onecloud.dtb
     cp $dtbfile ../$bootfs
 
     uimage=arch/arm/boot/uImage
