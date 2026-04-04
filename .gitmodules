@@ -1,7 +1,7 @@
 [submodule "linux"]
 	path = linux
 	url = https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
-	branch = v6.12.32
+	branch = v5.15
 [submodule "patch/rootfs/usr/lib/firmware"]
 	path = patch/rootfs/usr/lib/firmware
 	url = https://github.com/armbian/firmware.git
