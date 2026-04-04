@@ -18,7 +18,7 @@ export chlivedo="arch-chroot $livecd qemu-arm-static /bin/bash -c"
 export chrootdo="systemd-nspawn -D $rootfs qemu-arm-static /bin/bash -c"
 
 export LOCALVERSION=-onecloud
-export KERNEL_VERSION=6.12.28
+export KERNEL_VERSION=5.15.68
 export COMMIT_ID="undefined"
 
 function pre_build() {
