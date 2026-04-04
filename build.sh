@@ -464,7 +464,7 @@ pre_build
 pre_build_rootfs
 pre_build_linux
 
-# build_rootfs
+build_rootfs
 build_linux
 
 post_build_linux
