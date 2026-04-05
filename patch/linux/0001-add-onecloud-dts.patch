@@ -17,7 +17,7 @@ index 598ba9436801..212ce3cc4092 100644
  	meson8b-odroidc1.dtb \
  	meson8m2-mxiii.dtb \
  	meson8m2-mxiii-plus.dtb \
-+	meson8m2-onecoud.dtb \
++	meson8b-onecloud.dtb \
  	meson8m2-m8s.dtb \
  	meson8m2-wetek-core.dtb
  dtb-$(CONFIG_ARCH_MMP) += \
@@ -487,6 +487,5 @@ index 000000000000..89e3e3238dec
 +	pinctrl-0 = <&ir_recv_pins>;
 +	pinctrl-names = "default";
 +};
--- 
+--
 2.43.0
-
