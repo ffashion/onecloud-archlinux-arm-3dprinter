@@ -1,7 +1,7 @@
 [submodule "linux"]
 	path = linux
-	url = https://git.kernel.org/pub/scm/linux/kernel/git/stable/linux.git
-	branch = v5.15
+	url = https://github.com/xdarklight/linux.git
+	branch = meson-mx-integration-5.15-20211017
 [submodule "patch/rootfs/usr/lib/firmware"]
 	path = patch/rootfs/usr/lib/firmware
 	url = https://github.com/armbian/firmware.git
