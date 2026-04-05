@@ -18,7 +18,7 @@ export chlivedo="arch-chroot $livecd qemu-arm-static /bin/bash -c"
 export chrootdo="systemd-nspawn -D $rootfs qemu-arm-static /bin/bash -c"
 
 export LOCALVERSION=-onecloud
-export KERNEL_VERSION=6.12.28
+export KERNEL_VERSION="undefined"
 export COMMIT_ID="undefined"
 
 function pre_build() {
@@ -367,6 +367,7 @@ function build_linux()
     make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j$[$(nproc) * 2] LOADADDR=0x00208000 uImage
     make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j$[$(nproc) * 2] dtbs
 
+    local KERNEL_VERSION=`(cd linux && make -s kernelrelease)`
     cd -
 }
 
