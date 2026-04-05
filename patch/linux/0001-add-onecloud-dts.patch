@@ -1,29 +1,32 @@
-Add dts
+From a4621c30147c39224e1cf0d5a318e7401081952f Mon Sep 17 00:00:00 2001
+From: fashion <fashion@openbfdev.com>
+Date: Sun, 5 Apr 2026 22:19:57 +0800
+Subject: [PATCH] add onecloud dts
 
 ---
  arch/arm/boot/dts/Makefile             |   1 +
- arch/arm/boot/dts/meson8b-onecloud.dts | 402 +++++++++++++++++++++++++
- 2 files changed, 403 insertions(+)
+ arch/arm/boot/dts/meson8b-onecloud.dts | 460 +++++++++++++++++++++++++
+ 2 files changed, 461 insertions(+)
  create mode 100644 arch/arm/boot/dts/meson8b-onecloud.dts
 
 diff --git a/arch/arm/boot/dts/Makefile b/arch/arm/boot/dts/Makefile
-index 7a72fc636a7a..9f9ddbf04128 100644
+index 598ba9436801..212ce3cc4092 100644
 --- a/arch/arm/boot/dts/Makefile
 +++ b/arch/arm/boot/dts/Makefile
-@@ -365,6 +365,7 @@ dtb-$(CONFIG_MACH_MESON8) += \
- 	meson8b-ec100.dtb \
- 	meson8b-mxq.dtb \
+@@ -367,6 +367,7 @@ dtb-$(CONFIG_MACH_MESON8) += \
  	meson8b-odroidc1.dtb \
-+	meson8b-onecloud.dtb \
- 	meson8m2-mxiii-plus.dtb
+ 	meson8m2-mxiii.dtb \
+ 	meson8m2-mxiii-plus.dtb \
++	meson8m2-onecoud.dtb \
+ 	meson8m2-m8s.dtb \
+ 	meson8m2-wetek-core.dtb
  dtb-$(CONFIG_ARCH_MMP) += \
- 	pxa168-aspenite.dtb \
 diff --git a/arch/arm/boot/dts/meson8b-onecloud.dts b/arch/arm/boot/dts/meson8b-onecloud.dts
 new file mode 100644
-index 000000000000..d517e45e22ba
+index 000000000000..89e3e3238dec
 --- /dev/null
 +++ b/arch/arm/boot/dts/meson8b-onecloud.dts
-@@ -0,0 +1,402 @@
+@@ -0,0 +1,460 @@
 +// SPDX-License-Identifier: GPL-2.0-only
 +/*
 + * Author: hzyitc
@@ -56,6 +59,48 @@ index 000000000000..d517e45e22ba
 +	emmc_pwrseq: emmc-pwrseq {
 +		compatible = "mmc-pwrseq-emmc";
 +		reset-gpios = <&gpio BOOT_9 GPIO_ACTIVE_LOW>;
++	};
++
++	hdmi-connector {
++		compatible = "hdmi-connector";
++		type = "a";
++
++		port {
++			hdmi_connector_in: endpoint {
++				remote-endpoint = <&hdmi_tx_tmds_out>;
++			};
++		};
++	};
++
++	sound {
++		compatible = "amlogic,gx-sound-card";
++
++		assigned-clocks = <&clkc CLKID_MPLL0>,
++				  <&clkc CLKID_MPLL1>;
++		assigned-clock-rates = <294912000>,
++				       <270950400>;
++
++		dai-link-0 {
++			sound-dai = <&aiu AIU_CPU CPU_I2S_FIFO>;
++		};
++
++		dai-link-1 {
++			sound-dai = <&aiu AIU_CPU CPU_I2S_ENCODER>;
++			dai-format = "i2s";
++			mclk-fs = <256>;
++
++			codec-0 {
++				sound-dai = <&aiu AIU_HDMI CTRL_I2S>;
++			};
++		};
++
++		dai-link-2 {
++			sound-dai = <&aiu AIU_HDMI CTRL_OUT>;
++
++			codec-0 {
++				sound-dai = <&hdmi_tx 0>;
++			};
++		};
 +	};
 +
 +	button {
@@ -204,6 +249,10 @@ index 000000000000..d517e45e22ba
 +	clock-names = "clkin0", "clkin1";
 +};
 +
++&aiu {
++	status = "okay";
++};
++
 +&cpu0 {
 +	cpu-supply = <&vcc_core>;
 +};
@@ -211,6 +260,18 @@ index 000000000000..d517e45e22ba
 +&mali {
 +	// commented to allow cpufreq tweaking
 +	// mali-supply = <&vcc_core>;
++};
++
++&hdmi_tx {
++	status = "okay";
++	pinctrl-0 = <&hdmi_hpd_pins>, <&hdmi_i2c_pins>;
++	pinctrl-names = "default";
++};
++
++&hdmi_tx_tmds_port {
++	hdmi_tx_tmds_out: endpoint {
++		remote-endpoint = <&hdmi_connector_in>;
++	};
 +};
 +
 +&gpio {
@@ -427,5 +488,5 @@ index 000000000000..d517e45e22ba
 +	pinctrl-names = "default";
 +};
 -- 
-2.25.1
+2.43.0
 
