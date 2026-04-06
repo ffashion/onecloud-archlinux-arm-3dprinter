@@ -448,17 +448,20 @@ function build_burn_img()
 	zstd $burnimg -o $burnimg.zst
 }
 
+
+function generate_burn_checksum() {
+	burnimg_version=build/burn-${KERNEL_VERSION}.img
+	mv $burnimg.zst $burnimg_version.zst
+	sha256sum $burnimg_version.zst > $burnimg_version.zst.sha256sum
+}
+
 function generate_checksum()
 {
     systemimg_version=build/system-${KERNEL_VERSION}.img
     mv $systemimg.zst $systemimg_version.zst
     sha256sum $systemimg_version.zst > $systemimg_version.zst.sha256sum
-
-	burnimg_version=build/burn-${KERNEL_VERSION}.img
-	mv $burnimg.zst $burnimg_version.zst
-
-	sha256sum $burnimg_version.zst > $burnimg_version.zst.sha256sum
 }
+
 
 
 pre_build
@@ -472,5 +475,7 @@ build_linux
 post_build_linux
 post_build_rootfs
 
-build_burn_img
 generate_checksum
+
+# build_burn_img
+# generate_burn_checksum
