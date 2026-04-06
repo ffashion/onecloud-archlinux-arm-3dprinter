@@ -1,0 +1,46 @@
+From 93a3ff406631cd2baaa8125bd7ca76525fd92c76 Mon Sep 17 00:00:00 2001
+From: fashion <fashion@openbfdev.com>
+Date: Mon, 6 Apr 2026 20:32:02 +0800
+Subject: [PATCH] add some log
+
+---
+ drivers/gpu/drm/meson/meson_drv.c | 9 +++++++++
+ 1 file changed, 9 insertions(+)
+
+diff --git a/drivers/gpu/drm/meson/meson_drv.c b/drivers/gpu/drm/meson/meson_drv.c
+index 7b07b6d1b199..e6d975bfadfd 100644
+--- a/drivers/gpu/drm/meson/meson_drv.c
++++ b/drivers/gpu/drm/meson/meson_drv.c
+@@ -620,13 +620,21 @@ static int meson_drv_probe(struct platform_device *pdev)
+ 	int count = 0;
+ 
+ 	for_each_endpoint_of_node(np, ep) {
++		printk("meson_drv_probe np->full_name %s\r\n", np->full_name);
++		printk("meson_drv_probe ep->full_name %s\r\n", ep->full_name);
++
+ 		remote = of_graph_get_remote_port_parent(ep);
++		if (remote == NULL) {
++			printk("remote is null");
++		}
++
+ 		if (!remote || !of_device_is_available(remote)) {
+ 			of_node_put(remote);
+ 			continue;
+ 		}
+ 
+ 		if (of_match_node(components_dev_match, remote)) {
++			printk("of_match_node");
+ 			component_match_add(&pdev->dev, &match, component_compare_of, remote);
+ 
+ 			dev_dbg(&pdev->dev, "parent %pOF remote match add %pOF parent %s\n",
+@@ -636,6 +644,7 @@ static int meson_drv_probe(struct platform_device *pdev)
+ 		of_node_put(remote);
+ 
+ 		++count;
++		printk("count :%d\r\n", count);
+ 	}
+ 
+ 	if (count && !match)
+-- 
+2.43.0
+
