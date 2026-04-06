@@ -334,6 +334,7 @@ function build_rootfs() {
     $chrootdo "pacman-key --init"
     $chrootdo "pacman-key --populate archlinuxarm"
 
+    $chrootdo "sed -i '1i Server = https://mirrors.tuna.tsinghua.edu.cn/archlinuxarm/\$arch/\$repo' /etc/pacman.d/mirrorlist"
 }
 
 function post_build_rootfs() {
