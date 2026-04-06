@@ -368,7 +368,7 @@ function build_linux()
     make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j$[$(nproc) * 2] LOADADDR=0x00208000 uImage
     make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j$[$(nproc) * 2] dtbs
 
-    KERNEL_VERSION=`(cd linux && make -s kernelrelease)`
+    KERNEL_VERSION=`make -s kernelrelease`
     cd -
 }
 
@@ -392,7 +392,7 @@ function post_build_linux()
 
 	# fix mkinitcpio warnning
     $chrootdo "echo '#KEYMAP=us' > /etc/vconsole.conf"
-    $chrootdo "mkinitcpio -k ${KERNEL_VERSION}${LOCALVERSION} -g /boot/initramfs-${KERNEL_VERSION}.onecloud.img"
+    $chrootdo "mkinitcpio -k ${KERNEL_VERSION} -g /boot/initramfs-${KERNEL_VERSION}.img"
 
     mkimage -C none -A arm -T script -d config/uboot/boot.cmd config/uboot/boot.scr
 
@@ -400,7 +400,7 @@ function post_build_linux()
     cp -r config/uboot/boot.env $bootfs
     cp -r config/uboot/boot.scr $bootfs
 
-    $chrootdo "mkimage -A arm -O linux -T ramdisk -C gzip -n uInitrd -d /boot/initramfs-${KERNEL_VERSION}.onecloud.img /boot/uInitrd"
+    $chrootdo "mkimage -A arm -O linux -T ramdisk -C gzip -n uInitrd -d /boot/initramfs-${KERNEL_VERSION}.img /boot/uInitrd"
 
     echo $COMMIT_ID >> $bootfs/commit
 }
