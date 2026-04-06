@@ -368,7 +368,7 @@ function build_linux()
     make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j$[$(nproc) * 2] LOADADDR=0x00208000 uImage
     make ARCH=arm CROSS_COMPILE=arm-linux-gnueabihf- -j$[$(nproc) * 2] dtbs
 
-    local KERNEL_VERSION=`(cd linux && make -s kernelrelease)`
+    KERNEL_VERSION=`(cd linux && make -s kernelrelease)`
     cd -
 }
 
