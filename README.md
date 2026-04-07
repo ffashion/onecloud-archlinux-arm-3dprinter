@@ -16,8 +16,10 @@
     4. Linux 6.12
     5. When can Device Checked. Will Start can0 set this bitrate to 500000
         1. if you want change bitrate, please edit  /usr/lib/systemd/network/60-klipper-can.network and reboot
-3. Unsupported and Need Fix Now
-    1. I dont know why can't start dm(tested with gdm and lightdm). Need Fix it
+    6. Suport GUI.
+        1. use Xfce4 + Lightdm default
+    7. Suport LED
+        1. When Klipper Start Success. Then Led change to green
 
 ## Related Links
 1. https://github.com/hzyitc/armbian-onecloud/blob/readme/.github/workflows/ci.yml
