@@ -8,7 +8,7 @@
 2. Supported Featured Now
     1. When System Boot, Will Startup klipper/moonraker and fluidd auto. You Can Access fluidd by onecoud ip with http
         1. klipper and moonraker from aur
-        2. fluidd from github. beacouse aur fluidd have some depends issue
+        2. fluidd from github. beacause aur fluidd have some depends issue
     2. Support Can device and gs usb.
     3. Support general ISO and burn Img
         1. When use general ISO. you can use alarm_install.sh to install system to emmc
