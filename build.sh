@@ -477,5 +477,5 @@ post_build_rootfs
 
 generate_checksum
 
-# build_burn_img
-# generate_burn_checksum
+build_burn_img
+generate_burn_checksum
